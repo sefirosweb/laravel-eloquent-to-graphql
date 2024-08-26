@@ -543,8 +543,14 @@ class GenerateGraphQLSchemaFromEloquentCommand extends Command
         if (!empty($excludeModels)) {
             $models = array_filter(
                 $models,
-                fn ($model) =>
-                    !(in_array($model, $excludeModels) || in_array(self::getModelClassName($model), $excludeModels))
+                function ($model) use ($excludeModels) {
+                    foreach ($excludeModels as $excludeModel) {
+                        if (fnmatch($excludeModel, $model) || fnmatch($excludeModel, self::getModelClassName($model))) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
             );
         }
 
